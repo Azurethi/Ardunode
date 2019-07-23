@@ -25,7 +25,7 @@ void loop() {
 
     packet_debugInt(1234);
     packet_debugLong(135325L);
-    packet_debugFloat(124145.512f);
+    packet_debugFloat(124145.512F);
     delay(1000);
 }
 

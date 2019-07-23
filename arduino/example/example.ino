@@ -27,7 +27,8 @@ void packet_debugFloat(float f) {
     pid(0xFF); pd(f);
 }
 
-void packet_example(int i, long l, float f){    //not implemented pc-side by default. Structure would be ['int','long','float']
+//not implemented pc-side by default. Structure would be ['int','long','float'] (see example.js)
+void packet_example(int i, long l, float f){
     pid(0x01); pd(i); pd(l); pd(f);
 }
 //end of packet definitions
@@ -42,7 +43,8 @@ void loop() {
 
     packet_debugInt(1234);
     packet_debugLong(135325L);
-    packet_debugFloat(124145.512f);
+    packet_debugFloat(124145.512F);
+    packet_example(1234,135325L,124145);
     delay(1000);
 }
 
