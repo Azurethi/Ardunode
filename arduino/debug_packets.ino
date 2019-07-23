@@ -1,3 +1,22 @@
+//Serial write
+#define sw(a,b) swrite((byte *)&a,b)
+void swrite(byte *b, int l) {
+    for(int i = 0; i<l;i++) Serial.write(b[i]);
+}
+
+//define packets
+void packet_debugInt(int i) {
+    Serial.write(0xFD); sw(i,2);
+}
+
+void packet_debugLong(long l) {
+    Serial.write(0xFE); sw(l,4);
+}
+void packet_debugFloat(float f) {
+    Serial.write(0xFF); sw(f,4);
+}
+
+//regular arduino code
 void setup() {
     Serial.begin(112500);
 }
@@ -5,20 +24,11 @@ void setup() {
 void loop() {
 
     packet_debugInt(1234);
-    packet_debugInt_long(1234,135325);
-
+    packet_debugLong(135325L);
+    packet_debugFloat(124145.512f);
     delay(1000);
 }
 
 
-void packet_debugInt(int i) {
-    Serial.write(0xF0); swrite(i);
-}
 
-void packet_debugInt_long(int i,long l) {
-    Serial.write(0xF1); swrite(i); swrite(l);
-}
 
-//serial writes
-void swrite(int i)  { Serial.write(i); Serial.write(i>>8); }
-void swrite(long l) { Serial.write(l); Serial.write(l>>8); Serial.write(l>>16); Serial.write(l>>24); }
