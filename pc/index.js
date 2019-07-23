@@ -2,6 +2,7 @@
 //module.exports = () =>{console.log("Hello World!");}
 
 const sp = require('serialport');
+const events = require('events').EventEmitter;
 
 exports.defaultDefinitions = {
     types:{ //'float':{bytes:4, proc:(l)=>{return l/65536.0;}}
@@ -68,6 +69,8 @@ exports.addPacket = (id, name, structure) =>{
 
 exports.init = () => {
 
+    var Packet_emitter = new events.EventEmitter();
+
     //Sanity check
     if(!settings.port) throw 'Ardunode: Tried to init with no port set'
     if(!definitions) definitions = exports.defaultDefinitions;
@@ -129,11 +132,19 @@ exports.init = () => {
                 proc.push(tmp);
             }
             
-            console.log("got packet: " + packet[0] + " ("+definitions.packets[packet[0]].name+")");
-            proc.forEach(e=>{console.log("  "+e)});
-            //TODO emit handle
+            //console.log("got packet: " + packet[0] + " ("+definitions.packets[packet[0]].name+")");
+            //proc.forEach(e=>{console.log("  "+e)});
+            var data = {
+                id: packet[0],
+                data: proc,
+                raw: packet,
+                name: definitions.packets[packet[0]].name
+            };
+
+            Packet_emitter.emit('*', data);
+            Packet_emitter.emit(data.name, data);
         });
     });
     
-
+    return Packet_emitter;
 }
