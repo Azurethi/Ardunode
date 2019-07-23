@@ -1,6 +1,7 @@
-//Packet Data Serial write function
-/* Usage: pd( <variable to write> ) 
- * 
+//Packet Data Serial write functions
+/* Usages: pid(<packet id>)
+ *          pd(<data>)
+ *          
  * NB: types & packet definitions must be registered pc-side
  *
  * int, long and float are implemented by default, along with the three debug packets below
