@@ -19,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/Azurethi/Ardunode/issues"
   },
-  "homepage": "https://github.com/Azurethi/Ardunode#readme"
+  "homepage": "https://github.com/Azurethi/Ardunode#readme",
+  "dependencies": {
+    "serialport": "^7.1.5"
+  }
 }
