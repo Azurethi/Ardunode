@@ -28,6 +28,10 @@ exports.setDefinitions = (_definitions) => {
     definitions = _definitions;
 };
 
+exports.addDefaults = () => {
+    definitions = exports.defaultDefinitions;
+};
+
 exports.addType = (name, bytes, proc = false) => {
     if(definitions){
         if(!Object.keys(definitions.types).includes(name)){
@@ -37,11 +41,17 @@ exports.addType = (name, bytes, proc = false) => {
         definitions = {types:{},packets:{}};
         definitions.types[name] = {bytes};
     }
+    return true;
 } 
 
 exports.addPacket = (id, name, structure) =>{
-    throw 'Not implemented';
-    //TODO implement
+    if(!definitions) return 'definitions unset!';
+    var registeredTypes = Object.keys(definitions.types);
+    structure.forEach(sid=>{
+        if(!registeredTypes.includes(sid)) return `unregistered type: ${sid}`;
+    });
+    if(Object.keys(definitions.packets).includes(id)) return 'id already taken';
+    definitions.packets[id] = {name,structure};
 }
 
 exports.init = () => {
@@ -54,7 +64,12 @@ exports.init = () => {
     var packets_list = Object.keys(definitions.packets);
     packets_list.forEach(packet_id =>{
         var totLen = 1;
-        definitions.packets[packet_id].structure.forEach(type=>{totLen += definitions.types[type].bytes});
+        
+        definitions.packets[packet_id].structure.forEach(type=>{
+            console.log(definitions.types);
+            console.log(type);
+            totLen += definitions.types[type].bytes
+        });
         definitions.packets[packet_id].length = totLen;
     });
 
