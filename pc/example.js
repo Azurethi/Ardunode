@@ -13,5 +13,5 @@ ardunode.addPacket(0x01,'example',['int','long','float']);
 var con = ardunode.init();          //connect & listen
 
 con.on('*',(packet)=>{              //Use packet names to listen for specific packets or * to listen for all
-    console.log(`Got ${packet.name} packet id:${packet.id} containing: ${packet.data} (raw was: [${packet.raw}])`)
-})
+    console.log(`Got ${packet.name} packet id:${packet.id} containing: ${packet.data} (raw was: [${packet.raw}])`);
+});
