@@ -5,10 +5,20 @@ const sp = require('serialport');
 
 exports.defaultDefinitions = {
     types:{ //'float':{bytes:4, proc:(l)=>{return l/65536.0;}}
-        'int':{bytes:2}
+        'int':{bytes:2},
+        'long':{bytes:4},
+        'float':{bytes:4,preproc:(preproc)=>{
+            var view = new DataView(new ArrayBuffer(4));
+            preproc.forEach(function (b, i) {
+                view.setUint8(3-i, b);
+            });
+            return view.getFloat32(0);
+        }}
     },
     packets:{ //0xF0: {name: "debug_float",   structure:['float']},
-        0xF0: {name: "debug_int",   structure:['int']}
+        0xFD: {name: "debug_int",   structure:['int']},
+        0xFE: {name: "debug_long",   structure:['long']},
+        0xFF: {name: "debug_float",   structure:['float']}
     }
 };
 
@@ -32,16 +42,18 @@ exports.addDefaults = () => {
     definitions = exports.defaultDefinitions;
 };
 
-exports.addType = (name, bytes, proc = false) => {
+exports.addType = (name, bytes, proc = false,preproc = false) => {
     if(definitions){
         if(!Object.keys(definitions.types).includes(name)){
-            definitions.types[name] = {bytes};
+            definitions.types[name] = {bytes,proc,preproc};
+            return true;
         }
+        return 'name already taken';
     } else {
         definitions = {types:{},packets:{}};
-        definitions.types[name] = {bytes};
+        definitions.types[name] = {bytes,proc};
+        return true;
     }
-    return true;
 } 
 
 exports.addPacket = (id, name, structure) =>{
@@ -64,12 +76,7 @@ exports.init = () => {
     var packets_list = Object.keys(definitions.packets);
     packets_list.forEach(packet_id =>{
         var totLen = 1;
-        
-        definitions.packets[packet_id].structure.forEach(type=>{
-            console.log(definitions.types);
-            console.log(type);
-            totLen += definitions.types[type].bytes
-        });
+        definitions.packets[packet_id].structure.forEach(type=>{totLen += definitions.types[type].bytes});
         definitions.packets[packet_id].length = totLen;
     });
 
@@ -112,9 +119,12 @@ exports.init = () => {
             for(var structure_i = 0; structure_i<structure.length; structure_i++){
                 var tmp = 0;
                 var shift = -8;
+                var thisVar = [];
                 for(var v_i = 0; v_i<definitions.types[structure[structure_i]].bytes; v_i++){
+                    thisVar.push(packet[pos]);
                     tmp |= packet[pos++] << (shift+=8);
                 }
+                if(definitions.types[structure[structure_i]].preproc) tmp = definitions.types[structure[structure_i]].preproc(thisVar);
                 if(definitions.types[structure[structure_i]].proc) tmp = definitions.types[structure[structure_i]].proc(tmp);
                 proc.push(tmp);
             }
