@@ -22,5 +22,6 @@
   "homepage": "https://github.com/Azurethi/Ardunode#readme",
   "dependencies": {
     "serialport": "^7.1.5"
-  }
+  },
+  "devDependencies": {}
 }
