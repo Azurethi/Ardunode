@@ -74,6 +74,7 @@ exports.init = () => {
     //Sanity check
     if(!settings.port) throw 'Ardunode: Tried to init with no port set'
     if(!definitions) definitions = exports.defaultDefinitions;
+    //TODO more safety checks of definitions 
 
     //Get the list of packet id's & add total length fields to each packet definition
     var packets_list = Object.keys(definitions.packets);
@@ -104,9 +105,8 @@ exports.init = () => {
                 //if invalid byte, discard. else, add to buffer
                 if(packet_buffer_pos == 0 && !packets_list.includes(byte.toString())) return;
                 packet_buffer[packet_buffer_pos++] = byte;
-
                 //if buffer at expected packet length, emit packet & reset buffer
-                if(packet_buffer_pos>1 && definitions.packets[packet_buffer[0]].length == packet_buffer_pos){
+                if(packet_buffer_pos>0 && definitions.packets[packet_buffer[0]].length == packet_buffer_pos){
                     asp.emit('packet', [...packet_buffer]);
                     packet_buffer = [];
                     packet_buffer_pos = 0;
@@ -146,5 +146,20 @@ exports.init = () => {
         });
     });
     
+    //Add send functions to return emitter
+    Packet_emitter['sendRaw'] = asp.write;
+    Packet_emitter['sendByte'] =(byte)=>{
+        var buf = new Buffer.alloc(1);
+        buf.writeUInt8(parseInt(byte));
+        asp.write(buf);
+    };
+    Packet_emitter['sendBytes'] =(bytes)=>{
+        var buf = new Buffer.alloc(bytes.length);
+        bytes.forEach(byte=>{buf.writeUInt8(parseInt(byte));});
+        asp.write(buf);
+    };
+    //TODO add more sending functions so that users don't have to implement themselves?
+    //  possibly even default & editable definitions for these?
+
     return Packet_emitter;
 }

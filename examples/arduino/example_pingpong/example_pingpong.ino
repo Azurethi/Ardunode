@@ -13,8 +13,8 @@ void packet_sleep(){pid(0x05);}
 //sleep function
 void sleeploop(){
     while(Serial.available()>0) Serial.read();
-    packet_sleep();
     while(Serial.available()<2){
+        packet_sleep();
         digitalWrite(LED_BUILTIN,HIGH);
         delay(500);
         digitalWrite(LED_BUILTIN,LOW);
@@ -39,7 +39,7 @@ void checkCmds(){
     }
     switch(cmd){            //Commands are defined here
         case 0x00:          //not required, but will be used to wake from sleep, could put "post sleep" code here
-            break;   
+            break;
         case 0x01:          //sleep command, enters sleeploop
             sleeploop();
             break;
@@ -65,7 +65,7 @@ void setup(){
 
 void loop() {
     checkCmds(); //Checks for incomming serial commands as above
-    
+
     //Other code here, not related to comunication (this example just flashes LED_BUILTIN faster than in sleep)
     digitalWrite(LED_BUILTIN,HIGH);
     delay(100);
