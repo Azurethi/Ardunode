@@ -1,27 +1,9 @@
-//console.log("Ardunode loaded!");
-//module.exports = () =>{console.log("Hello World!");}
-
+//get dependancies
 const sp = require('serialport');
 const events = require('events').EventEmitter;
 
-exports.defaultDefinitions = {
-    types:{ //'float':{bytes:4, proc:(l)=>{return l/65536.0;}}
-        'int':{bytes:2},
-        'long':{bytes:4},
-        'float':{bytes:4,preproc:(preproc)=>{
-            var view = new DataView(new ArrayBuffer(4));
-            preproc.forEach(function (b, i) {
-                view.setUint8(3-i, b);
-            });
-            return view.getFloat32(0);
-        }}
-    },
-    packets:{ //0xF0: {name: "debug_float",   structure:['float']},
-        0xFD: {name: "debug_int",   structure:['int']},
-        0xFE: {name: "debug_long",   structure:['long']},
-        0xFF: {name: "debug_float",   structure:['float']}
-    }
-};
+//load default packets & types
+exports.defaultDefinitions = require('defaultDefinitions')();
 
 var asp = false;
 var definitions = false;
@@ -57,14 +39,14 @@ exports.addType = (name, bytes, proc = false,preproc = false) => {
     }
 } 
 
-exports.addPacket = (id, name, structure) =>{
+exports.addPacket = (id, name, structure, names = false) =>{
     if(!definitions) return 'definitions unset!';
     var registeredTypes = Object.keys(definitions.types);
     structure.forEach(sid=>{
         if(!registeredTypes.includes(sid)) return `unregistered type: ${sid}`;
     });
     if(Object.keys(definitions.packets).includes(id)) return 'id already taken';
-    definitions.packets[id] = {name,structure};
+    definitions.packets[id] = {name,structure,names};
 }
 
 exports.init = () => {
@@ -135,12 +117,16 @@ exports.init = () => {
             //console.log("got packet: " + packet[0] + " ("+definitions.packets[packet[0]].name+")");
             //proc.forEach(e=>{console.log("  "+e)});
             var data = {
-                id: packet[0],
-                data: proc,
-                raw: packet,
-                name: definitions.packets[packet[0]].name
+                _id: packet[0],
+                _data: proc,
+                _raw: packet,
+                _name: definitions.packets[packet[0]].name
             };
-
+            if(definitions.packets[packet[0]].names){
+                definitions.packets[packet[0]].names.forEach((n,i)=>{
+                    data[n] = proc[i];
+                });
+            }
             Packet_emitter.emit('*', data);
             Packet_emitter.emit(data.name, data);
         });
