@@ -1,7 +1,8 @@
 //Serial write
 #define sw(a,b) swrite((byte *)&a,b)
+
 void swrite(byte *b, int l) {
-    for(int i = 0; i<l;i++) Serial.write(b[i]);
+     Serial.write(b, l);
 }
 
 //define packets

@@ -9,7 +9,7 @@
 // ignore from here
 #define pd(a) swrite((byte *)&a,sizeof(a))
 #define pid(a) Serial.write(a)
-void swrite(byte *b, int l){for(int i =0; i<l;i++)pid(b[i]);}
+void swrite(byte *b, int l){ Serial.write(b, l);}
 // ignore to here
 
 
